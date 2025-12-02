@@ -56,16 +56,23 @@ class BookingSystem:
             print(f"{i}. {showtime}")
 
     def book_ticket(self):
+        if not self.showtimes:
+            print("No showtimes available.")
+            return
+
         self.display_showtimes()
 
         # ------- SAFE SHOWTIME CHOICE -------
         try:
-            choice = int(input("\nSelect a showtime: ")) - 1
+            choice = int(input("\nSelect a showtime (number): ")) - 1
             if choice < 0 or choice >= len(self.showtimes):
                 print("Invalid showtime number. Please try again.")
                 return
         except ValueError:
             print("Please enter a valid number.")
+            return
+        except Exception as e:
+            print("Unexpected error:", e)
             return
 
         showtime = self.showtimes[choice]
@@ -80,45 +87,55 @@ class BookingSystem:
         except ValueError:
             print("Please enter a valid number.")
             return
+        except Exception as e:
+            print("Unexpected error:", e)
+            return
 
         # ------- BOOKING CHECK -------
-        if showtime.book_seats(num_tickets):
-            ticket = Ticket(showtime.movie, showtime.time, num_tickets)
-            self.bookings.append(ticket)
-            print("\nBooking Successful!")
-            print(ticket)
-        else:
-            print("\nSorry, not enough seats available.")
+        try:
+            if showtime.book_seats(num_tickets):
+                ticket = Ticket(showtime.movie, showtime.time, num_tickets)
+                self.bookings.append(ticket)
+                print("\nBooking Successful!")
+                print(ticket)
+            else:
+                print("\nSorry, not enough seats available.")
+        except Exception as e:
+            print("Error during booking:", e)
 
 
 if __name__ == "__main__":
     system = BookingSystem()
 
+    # ----- Add movies -----
     movie1 = Movie("Madagascar", 120, 250)
     movie2 = Movie("Frozen", 140, 300)
-
     system.add_movie(movie1)
     system.add_movie(movie2)
 
+    # ----- Add showtimes -----
     system.add_showtime(Showtime(movie1, "1:00 PM", 50))
     system.add_showtime(Showtime(movie1, "4:00 PM", 40))
     system.add_showtime(Showtime(movie2, "2:30 PM", 30))
     system.add_showtime(Showtime(movie2, "6:00 PM", 25))
 
+    # ----- Main menu -----
     while True:
         print("\n--- Welcome to CineVerse Booking System ---")
         print("1. View Showtimes")
         print("2. Book Ticket")
         print("3. Exit")
 
-        choice = input("Enter choice: ")
-
-        if choice == "1":
-            system.display_showtimes()
-        elif choice == "2":
-            system.book_ticket()
-        elif choice == "3":
-            print("Thank you for using CineVerse! Goodbye.")
-            break
-        else:
-            print("Invalid choice. Try again.")
+        try:
+            choice = input("Enter choice: ").strip()
+            if choice == "1":
+                system.display_showtimes()
+            elif choice == "2":
+                system.book_ticket()
+            elif choice == "3":
+                print("Thank you for using CineVerse! Goodbye.")
+                break
+            else:
+                print("Invalid choice. Try again.")
+        except Exception as e:
+            print("Unexpected error:", e)
